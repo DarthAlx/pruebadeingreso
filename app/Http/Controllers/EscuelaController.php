@@ -64,17 +64,32 @@ class EscuelaController extends Controller
      */
     public function show($id)
     {
-          $calificacion = Calificacion::where('alumno_id', $id)->first();
+      if (Calificacion::where('alumno_id', $id)->first()) {
+        $calificaciones = Calificacion::where('alumno_id', $id)->get();
+        $datos = array();
+        foreach ($calificaciones as $calificacion) {
           $materia = Materia::where('materia_id', $calificacion->materia_id)->first();
           $alumno = Alumno::where('alumno_id', $calificacion->alumno_id)->first();
-          return response()->json([
-              'id_t_usuario' => $alumno->alumno_id,
-              'nombre' =>  $alumno->nombre,
-              'apellido' =>  $alumno->ap_paterno,
-              'materia' =>  $materia->nombre,
-              'calificacion' => $calificacion->calificacion,
-              'fecha_registro' => $calificacion->created_at,
-          ]);
+          $datos[]=array(
+            'id_t_usuario' => $alumno->alumno_id,
+            'nombre' =>  $alumno->nombre,
+            'apellido' =>  $alumno->ap_paterno,
+            'materia' =>  $materia->nombre,
+            'calificacion' => $calificacion->calificacion,
+            'fecha_registro' => $calificacion->created_at
+          );
+        }
+
+        echo '' . json_encode($datos) . '';
+
+      }
+      else {
+        return response()->json([
+            'success' => 'error',
+            'msg' => 'no hay calificaciones'
+        ]);
+      }
+
     }
 
     /**
