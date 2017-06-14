@@ -57,8 +57,8 @@ class EscuelaController extends Controller
 
     public function show($id)
     {
-      $alumno = Alumno::findOrFail($id);
-      if ($alumno) {
+      $alumno = Alumno::find($id);
+      if (!$alumno->calificaciones->isEmpty()) {
         foreach ($alumno->calificaciones as $calificacion) {
           $datos[]=array(
             'id_t_usuario' => $alumno->id,
