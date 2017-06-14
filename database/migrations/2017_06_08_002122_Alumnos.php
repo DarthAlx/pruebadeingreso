@@ -13,7 +13,7 @@ class Alumnos extends Migration
     public function up()
     {
       Schema::create('t_alumnos', function (Blueprint $table) {
-          $table->increments('alumno_id');
+          $table->increments('id');
           $table->string('nombre',80);
           $table->string('ap_paterno', 80);
           $table->string('ap_materno', 80);

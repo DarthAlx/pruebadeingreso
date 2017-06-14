@@ -13,10 +13,10 @@
 
 $factory->define(App\Alumno::class, function (Faker\Generator $faker) {
     return [
-        'nombre' => $faker->name,
-        'ap_paterno' => $faker->name,
-        'ap_materno' => $faker->name,
-        'activo' => $faker->name
+        'nombre' => $faker->firstName,
+        'ap_paterno' => $faker->lastName,
+        'ap_materno' => $faker->lastName,
+        'activo' => $faker->boolean
     ];
 });
 
@@ -24,6 +24,6 @@ $factory->define(App\Alumno::class, function (Faker\Generator $faker) {
 $factory->define(App\Materia::class, function (Faker\Generator $faker) {
     return [
         'nombre' => $faker->name,
-        'activo' => $faker->name
+        'activo' => $faker->colorName
     ];
 });

@@ -13,7 +13,7 @@ class Calificaciones extends Migration
     public function up()
     {
       Schema::create('t_calificaciones', function (Blueprint $table) {
-          $table->increments('calificacion_id');
+          $table->increments('id');
           $table->integer('alumno_id');
           $table->integer('materia_id');
           $table->decimal('calificacion', 10, 2);

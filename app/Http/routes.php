@@ -11,22 +11,15 @@
 |
 */
 
-Route::get('/', function () {
+Route::get('/alta-calificacion', function () {
 
     $alumnos = App\Alumno::all();
     $materias = App\Materia::all();
     return view('altacalificacion', ['alumnos'=>$alumnos,'materias'=>$materias]) ;
 });
 Route::post('alta-calificacion', 'EscuelaController@store');
-
 Route::get('ver/{id}', 'EscuelaController@show');
-
-Route::get('/actualizar-calificacion', function () {
-
-  $alumnos = App\Alumno::all();
-  $materias = App\Materia::all();
-    $calificaciones = App\Calificacion::all();
-    return view('actualizarcalificacion', ['alumnos'=>$alumnos,'materias'=>$materias,'calificaciones'=>$calificaciones]);
-});
-Route::any('actualizando-calificacion/{id}', 'EscuelaController@update');
-Route::any('borrar-calificacion/{id}', 'EscuelaController@destroy');
+Route::get('actualizar-calificacion/{id}', 'EscuelaController@edit');
+Route::put('actualizar-calificacion/{id}', 'EscuelaController@update');
+Route::get('baja-calificacion/{id}', 'EscuelaController@delete');
+Route::delete('baja-calificacion', 'EscuelaController@destroy');

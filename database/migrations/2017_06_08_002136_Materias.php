@@ -13,7 +13,7 @@ class Materias extends Migration
     public function up()
     {
       Schema::create('t_materias', function (Blueprint $table) {
-          $table->increments('materia_id');
+          $table->increments('id');
           $table->string('nombre',80);
           $table->boolean('activo');
           $table->timestamps();

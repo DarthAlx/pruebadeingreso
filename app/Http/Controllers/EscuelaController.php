@@ -9,79 +9,67 @@ use App\Http\Controllers\Controller;
 use App\Alumno;
 use App\Materia;
 use App\Calificacion;
+use Validator;
 
 class EscuelaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    protected function validarPost(array $data)
     {
-        //
+        return Validator::make($data, [
+            'materia_id' => 'required|numeric',
+            'alumno_id' => 'required|numeric',
+            'calificacion' => 'required|numeric'
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    protected function validarPut(array $data)
     {
-        //
+        return Validator::make($data, [
+            'materia_id' => 'required|numeric',
+            'calificacion' => 'required|numeric'
+        ]);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-      $guardar = new Calificacion($request->all());
-      if ($guardar->save()) {
-        return response()->json([
-            'success' => 'ok',
-            'msg' => 'calificacion registrada'
-        ]);
-      }
-      else {
-        return response()->json([
-            'success' => 'error',
-            'msg' => 'no pudo guardarse la calificacion'
-        ]);
-      }
+      $validator = $this->validarPost($request->all());
 
+      if ($validator->fails()) {
+          $this->throwValidationException(
+              $request, $validator
+          );
+      }
+      else{
+        $guardar = new Calificacion($request->all());
+        if ($guardar->save()) {
+          return response()->json([
+              'success' => 'ok',
+              'msg' => 'calificacion registrada'
+          ]);
+        }
+        else {
+          return response()->json([
+              'success' => 'error',
+              'msg' => 'no pudo guardarse la calificacion'
+          ]);
+        }
+      }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-      if (Calificacion::where('alumno_id', $id)->first()) {
-        $calificaciones = Calificacion::where('alumno_id', $id)->get();
-        $datos = array();
-        foreach ($calificaciones as $calificacion) {
-          $materia = Materia::where('materia_id', $calificacion->materia_id)->first();
-          $alumno = Alumno::where('alumno_id', $calificacion->alumno_id)->first();
+      $alumno = Alumno::findOrFail($id);
+      if ($alumno) {
+        foreach ($alumno->calificaciones as $calificacion) {
           $datos[]=array(
-            'id_t_usuario' => $alumno->alumno_id,
+            'id_t_usuario' => $alumno->id,
             'nombre' =>  $alumno->nombre,
             'apellido' =>  $alumno->ap_paterno,
-            'materia' =>  $materia->nombre,
+            'materia' =>  $calificacion->materia->nombre,
             'calificacion' => $calificacion->calificacion,
             'fecha_registro' => $calificacion->created_at
           );
         }
-
-        echo '' . json_encode($datos) . '';
-
+        return response()->json($datos);
       }
       else {
         return response()->json([
@@ -90,53 +78,63 @@ class EscuelaController extends Controller
         ]);
       }
 
+
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-
-
-      if (Calificacion::where('calificacion_id', $id)->update(['materia_id' => $request->materia_id,'alumno_id' => $request->alumno_id,'calificacion' => $request->calificacion,])) {
-        return response()->json([
-            'success' => 'ok',
-            'msg' => 'calificacion actualizada'
-        ]);
+    public function edit($id){
+      $alumno = Alumno::find($id);
+      $materias = Materia::all();
+      $calificaciones = $alumno->calificaciones;
+      if (!$calificaciones->isEmpty()) {
+        return view('actualizarcalificacion', ['alumno'=>$alumno,'materias'=>$materias,'calificaciones'=>$calificaciones]);
       }
       else {
         return response()->json([
             'success' => 'error',
-            'msg' => 'no pudo actualizar la calificacion'
+            'msg' => 'no hay calificaciones que editar'
         ]);
       }
+
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-     public function destroy(Request $request, $id)
+    public function update(Request $request, $id)
+    {
+      $validator = $this->validarPut($request->all());
+
+      if ($validator->fails()) {
+          $this->throwValidationException(
+              $request, $validator
+          );
+      }
+      else {
+        $update = Calificacion::where('id', $id)->update(['materia_id' => $request->materia_id,'calificacion' => $request->calificacion,]);
+
+        if ($update) {
+          return response()->json([
+              'success' => 'ok',
+              'msg' => 'calificacion actualizada'
+          ]);
+        }
+        else {
+          return response()->json([
+              'success' => 'error',
+              'msg' => 'no pudo actualizar la calificacion'
+          ]);
+        }
+      }
+
+    }
+
+    public function delete($id)
+    {
+      $alumno = Alumno::find($id);
+      $calificaciones = $alumno->calificaciones;
+      return view('bajacalificacion', ['alumno'=>$alumno,'calificaciones'=>$calificaciones]);
+    }
+     public function destroy(Request $request)
      {
-         if (Calificacion::where('calificacion_id', $id)->delete()) {
+       $delete = Calificacion::where('id', $request->calificacion)->delete();
+         if ($delete) {
            return response()->json([
                'success' => 'ok',
                'msg' => 'calificacion borrada'
